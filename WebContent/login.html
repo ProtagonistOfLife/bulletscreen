@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base href="/bulletscreen/">
+<meta charset="gbk">
+<title>弹幕登录</title>
+<link rel="stylesheet" href="css/frame.css" type="text/css" >
+<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+<style type="text/css">
+	body{
+		background: url("img/grass.jpg") no-repeat; 
+	}
+</style>
+<script type="text/javascript">
+	$(function(){
+		$("#verifiedimg").click(function(){
+			$("#verifiedimg").attr("src","getverifiedimg?flag="+Math.random());
+		});
+		$("#changebutton").click(function() {
+			$("#verifiedimg").attr("src","getverifiedimg?flag="+Math.random());
+		});
+	});
+	
+	/* 表单校验中暂时还有一些不足，到时候解决 */
+	function check() {
+		alert("调用了");
+		var flag = false;
+		$.ajax({
+			type:"post",
+			url:"/bulletscreen/loginservlet",
+			data:$(form).serialize(), 
+			/* data:{"id":"1000000000","password":"1000000000"}, */
+			success:function(data){
+				console.log(data);
+				alert("zhixingla");
+				if(data == "1"){
+					console.log(data);
+					$("#hidden1").show();
+					$("#hidden2").hidden();
+					return false;
+				}else if(data == "2"){
+					$("#hidden2").show();
+					$("#hidden1").hidden();
+					return false;
+				}else{
+					flag = true;
+				}
+			},
+			contentType: "application/x-www-form-urlencoded; charset=utf-8",
+			dataType:"text"
+		});
+		console.log(flag);
+		return flag;
+	}
+</script>
+</head>
+<body>
+	<div class="formdiv">
+		<form action="loginservlet" method="post" onsubmit="return check()">
+			<h1>弹幕登录</h1>
+			<span class="inputname">用户名：</span><input type="text" name="id" class="input" placeholder="用户名/账号">
+			<br>
+			<span class="inputname">密码：</span><input type="password" name="password" class="input" placeholder="请输入密码">
+			<span id="hidden1" style="color: red;display: none;">账号与密码不匹配</span>
+			<br>
+			<span class="inputname"><img id="verifiedimg" alt="验证码" src="getverifiedimg"></span><input type="button" class="bn" value="换一张" id="changebutton">
+			<span class="inputname"></span><input class="input" type="text" name="verify" placeholder="输入验证码" onfocus="if(this.value.length >3)this.value=''">
+			<span id="hidden2" style="color: red;display: none;">验证码错误</span>
+			<br>
+			<div class="buttonarea">
+				 <input type="submit" value="登录" class="bn"><input type="button" class="bn" value="注册">
+			</div>
+			
+		</form>
+	</div>
+</body>
+</html>

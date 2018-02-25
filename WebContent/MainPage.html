@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="gbk">
+<meta name="Keywords" content="弹幕，PPT">
+<meta name="description" content="">
+<title>弹幕</title>
+<link rel="stylesheet" type="text/css" href="css/frame.css">
+<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="js/jquery.cookie.js"></script>
+<script type="text/javascript">
+var top_distance = 10;
+var last_message = 0;
+var flag = false;
+var selflist = new Array();
+var showlist = new Array();
+$(function() {
+	/* var but = $("#submit");
+	but.click(function(){
+		var bulletarea = $("#bulletarea");
+		var source = $("#source");
+		var copy = source.clone();
+		var text = $("textarea").val();
+		console.log($("textarea"));
+		copy.val(text);
+		bulltetarea.append(copy);
+		alert("is running");
+	}) */
+	var but = $("#submit");
+	but.click(function(){
+		var text = $("textarea").val();
+		$("textarea").val("");
+		$.ajax({
+			type:"post",
+			url:"al/" + $("input:checked").val()+ ".do",
+			data:{msg:text},
+			success:function(data){
+				if($.cookie("id") == null){
+					window.location = data;
+				}else{
+					var root = document.getElementById("bulletarea");
+					var child = document.createElement("div");
+					child.setAttribute("style","color:"+getrandomcolor());
+					child.innerText = text;
+					root.appendChild(child);
+					init_animated(top_distance);
+					/* console.log(data); */
+					selflist.push(data);
+				}
+			},
+			contentType: "application/x-www-form-urlencoded; charset=gb2312",
+			dataType:"text"
+		});
+	});
+	var t1 = setInterval(getmessage, 6000);
+	var t2 = setInterval(show, 6000);
+	if(new Date().getTime()%1000000 > 6000000){
+		flag = true;
+	}
+});
+
+function init_animated(td){
+	var width = $(window).width();
+	var time = 25000;
+	var height = 520;
+	$("#bulletarea >div").show().each(function(){
+		$(this).css({left:width+"px",top:td+"px"});
+		td += 30;
+		$(this).animate({left:"-"+width+"px"},time,function(){
+			$(this).remove();
+			top_distance += 30;	
+			if(top_distance > height)
+				top_distance = 10;
+		});
+		if(td > height){
+			td = 10;
+		}
+	});
+}
+
+function getmessage(){
+	$.ajax({
+		type:"get",
+		url:"al/community.do",
+		success:function(data){
+			if(data != null){
+				showlist.push(data);
+				console.log(data);
+			}
+		},
+		contentType: "application/x-www-form-urlencoded; charset=gb2312",
+		dataType:"json"
+	});
+}
+
+function show(){
+	var flag1 = false;
+	var size = showlist.length;
+	if(size > 10)
+		size = 10;
+	var keys = "";
+	for(i=0;i<size;i++){
+		var temp = showlist.shift();
+		var root = document.getElementById("bulletarea");
+		var child = document.createElement("div");
+		child.setAttribute("style","color:"+getrandomcolor());
+		for(var key in temp){
+			console.log(selflist);
+			if(selflist.length > 0){
+				var v = $.inArray(key,selflist);
+				if(v >= 0){
+					selflist.splice(0, v+1);
+					flag1 = false;
+					return ;
+				}
+			}
+			flag1 = true;
+			keys = key;
+		}
+		if(flag1){
+			child.innerText = temp[keys];
+			root.appendChild(child);
+			init_animated(top_distance);
+		}
+	}
+}
+
+function getrandomcolor(){
+	 return '#'+Math.floor(Math.random()*16777215).toString(16); 
+}
+</script>
+</head>
+<body>
+<div id="bulletarea">
+</div>
+<!-- <form action="/bulletscreen/return.action"> -->
+<div id="sendarea">
+	<textarea rows="3" cols="100" placeholder="请输入内容" id="content"></textarea>
+	<input type="text" id="rank" name="rank" hidden="hidden">
+	<br>
+	<input type="button" value="发送" id="submit">
+	<div id="selection">
+		<input type="radio" name="action" value="community" id="community" checked="checked">
+		<label for="community">交流</label>
+		<input type="radio" name="action" value="question" id="question">
+		<label for="question">提问</label>
+	</div>
+	<!-- <input type="button" value="测试"> -->
+</div>
+<!-- </form> -->
+</body>
+</html>
